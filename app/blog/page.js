@@ -1,40 +1,65 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PostCard from '../../components/PostCard';
+import CommentForm from '../../components/CommentForm';
 
 export default function Blog() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const res = await fetch('/api/posts');
+        if (!res.ok) throw new Error('Failed to fetch posts');
+        const data = await res.json();
+        setPosts(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPosts();
+  }, []);
+
   return (
     <>
       <Header />
-    
-    <main className="min-h-screen bg-white p-6">
-      <h1 className="text-3xl font-bold mb-8 text-center">🌄 Nature Talks</h1>
+      <main className="min-h-screen bg-white p-6">
+        <h1 className="text-3xl font-bold mb-8 text-center">🌄 Nature Talks</h1>
 
-        <PostCard
-title="Awakening Skies: The Magic of Sunrise"
-  description="There’s something breathtaking about the world as it wakes up. The soft golden light, the promise of a new day, and the peaceful quiet that fills the air make every sunrise a moment to cherish."
-/>
-        <PostCard
-         title="Sunset Serenade: When the Day Sings Goodbye"
-  description="As the sun dips below the horizon, the sky bursts into a symphony of colors — fiery reds, gentle pinks, and deep purples — reminding us of the beauty in endings and the calm before night."
-        />
+        {loading && (
+          <p className="text-center text-gray-500">Loading posts...</p>
+        )}
+        {!loading && posts.length === 0 && (
+          <p className="text-center text-gray-500">No posts available.</p>
+        )}
+        {!loading &&
+          posts.map((post) => (
+            <PostCard
+              key={post.id}
+              title={post.title}
+              description={post.description}
+            />
+          ))}
 
-        <PostCard
-          title="Moonlight Whispers: The Night’s Silent Muse"
-  description="Under the soft glow of the moon, the world slows down. The silvery light bathes the earth in mystery and serenity, inspiring poets, dreamers, and lovers alike."
-  
-        />
+        
 
-        <Link href="/" className="text-blue-600 underline mt-6 block">
-          ← Back to Home
-        </Link>
+        <CommentForm />
       </main>
-    
+       {/* Back to Home Link */}
+        <p className="text-center mt-10">
+          <Link href="/" className="text-blue-600 underline hover:text-blue-800">
+            ← Back to Home
+          </Link>
+        </p>
       <Footer />
     </>
   );
 }
-
-
 
